@@ -19,6 +19,8 @@
 #ifndef MSTRING_H
 #define MSTRING_H
 
+#ifdef __cplusplus  // we only want this for C++ code
+
 /*  MString by Jesse Lovelace (mentat)
 	jllovela@eos.ncsu.edu
 
@@ -56,11 +58,19 @@
 */
 
 const int MAX_PRECISION = 9; //due to bad double to string code.
-const char MString_VERSION[8] = "0.60";
+const char MString_VERSION[8] = "0.61";
+//typedef const char * LPCSTR;
 
 #include <fstream.h>
 
 class MNode;
+
+struct MStringData {
+	char * pcStr;
+	int precision;
+	int iBufLen; // length of buffer minus 1 for null terminator
+	int iBufferInUse;
+};
 
 class MString {
 
@@ -94,16 +104,23 @@ public:
 	// PRE: stringSrc is a valid MString object.
 	// POST: new object is a deep copy of stringSrc.
 
-	MString(char ch, int nRepeat = 1); 
+	MString(const char ch, int nRepeat = 1);
 	// Info: construct with single character repeated nRepeat times
 	// PRE: ch is a valid ascii character and non null.
 	// POST: new object contains ch repeated nRepeat times.
 
-	MString(char* string); 
+	MString(const char* string);
 	// PRE: string is a valid null-terminated string.
 	// POST: new object contains the data from string minues null.
 
-	MString(int num);
+// Added by Bruce Riggins	
+	MString(const char * string, int nLength);
+	// Info: copy with maximum length
+	// PRE: string is a valid null-terminated string, nLength>0
+	// POST: new object contains the data from string minues null
+// End addition	
+	
+	MString(const int num);
 	// NEW CODE, PLEASE HELP DEBUG (v. 60)
 	MString(double num);
 
@@ -165,11 +182,15 @@ public:
 
 //End String as Array Functions ---------------------------
 
+//Begin added operators by Bruce Riggins ---------------
+	operator const char * () const;
+//End added operators by Bruce Riggins -----------------
+
 //Begin Assignment/Concatination operators ----------------
 
 	const MString& operator =(const MString& stringSrc); //Idea from CString
 	const MString& operator =(char ch);
-	const MString& operator =(char* string);
+	const MString& operator =(const char* string);
 	const MString& operator =(int num); //Original MString
 	const MString& operator =(double num); //Original MString
 	const MString& operator =(float num); //Original MString
@@ -201,8 +222,8 @@ public:
 //Begin Comparison operators ------------------------------
 
 	friend bool operator==(const MString& s1, const MString& s2); //Idea from CString
-	friend bool operator==(const MString& s1, char* s2); 
-	friend bool operator==(char* s1, const MString& s2); 
+	friend bool operator==(const MString& s1, const char* s2);
+	friend bool operator==(const char* s1, const MString& s2);
 
 	friend bool operator!=(const MString& s1, const MString& s2); //Idea from CString
 	friend bool operator!=(const MString& s1, char* s2);
@@ -224,9 +245,9 @@ public:
 	friend bool operator >=(const MString& s1, char* s2);
 	friend bool operator >=(char* s1, const MString& s2);
 
-	int Compare(char* string) const; //Idea from CString
-	int Compare(MString string) const; //MString original
-	int CompareNoCase(char* string) const; //Idea from CString
+	int Compare(const char* string) const; //Idea from CString
+	int Compare(const MString& string) const; //MString original
+	int CompareNoCase(const char* string) const; //Idea from CString
 	int Collate(char* string) const; //Idea from CString
 	int CollateNoCase(char* string) const; //Idea from CString
 
@@ -272,6 +293,9 @@ public:
 	int Delete(int nIndex, int nCount = 1); //Idea from CString
 
 	//Research Format
+// Additions by Bruce Riggins 11/14/00	
+	void Format(char * sFormat, ...);
+// End additions by Bruce Riggins 11/14/00	
 
 	void Trim(); //Original MString
 	void Trim(char ch); //Original MString
@@ -304,15 +328,37 @@ public:
 
 	//Buffer Access and Windows-Specific items not included.
 
+//Begin Buffer Access -------------------------------------
+	// Additions by Bruce Riggins 11/7/00
+	// Access to string implementation buffer as "C" character array
+	char * GetBuffer(int nMinBufLength);	//Idea from CString
+	void ReleaseBuffer(int nNewLength = -1);	//Idea from CString
+//	char * GetBufferSetLength(int nNewLength);	//Idea from CString
+//	void FreeExtra();	//Idea from CString
+
+	// Use LockBuffer/UnlockBuffer to turn refcounting off
+	char * LockBuffer();	//Idea from CString
+	void UnlockBuffer();	//Idea from CString
+	
+	// End of BR additions
+
+//End Buffer Access ---------------------------------------
+
 private:
 
 	MNode* GetPointerAt(int nIndex);
+	void deallocate(MNode *p); // added by Bruce Riggins
 	
+	char * pcStr;	
 	MNode *headMNode;
 	MNode *tailMNode; //New for .3b
 
 	int precision;
+	int iBufLen; // length of buffer minus 1 for null terminator
+	int iBufferInUse;
 
 };
+
+#endif // __cplusplus
 
 #endif

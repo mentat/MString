@@ -16,6 +16,8 @@
     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 #include <fstream.h>
+#include <stdio.h>
+#include <stdarg.h>
 #include "MString.h"
 
 class MNode {
@@ -64,13 +66,46 @@ static MNode* copy(MNode* p, MNode*& tailNode)
 	tailNode = tail;
 	return head;
 }
-static void deallocate(MNode* p)
+
+/*
+// Added by Bruce Riggins
+// copy a char array to a node structure
+static int copy(MNode* fromNode, char * toPC)
+{
+	MNode* head = GetPointerAt;
+	MNode* tail = 0;
+
+
+	while(p) {
+		if (!head)
+			head = tail = new MNode(p->MInfo);
+		else {
+			tail->MLink_Forward = new MNode(p->MInfo);
+			tail = tail->MLink_Forward;
+		}
+		p = p->MLink_Forward;
+	}
+	tailNode = tail;
+	return head;
+}
+// End added by Bruce Riggins
+*/
+
+// Moved to internal private method
+// Bruce Riggins
+//static void deallocate(MNode* p)
+void MString::deallocate(MNode* p)
 {
 	MNode* tmp;
 	while (p) {
 		tmp = p;
 		p = p->MLink_Forward;
 		delete tmp;
+	}
+	if (pcStr) {
+		delete pcStr;
+		pcStr = NULL;
+//		iBufferInUse = 0;
 	}
 }
 
@@ -169,20 +204,31 @@ MString::~MString() {
 	deallocate(headMNode);
 	headMNode = NULL;
 	tailMNode = NULL;
+	if (pcStr)
+	{
+		delete pcStr;
+		pcStr = NULL;
+	}
 }
 
 MString::MString() {  //100%
 	headMNode = NULL;
 	tailMNode = NULL;
 	precision = 3;
+	pcStr = NULL;
+//	iBufferInUse = 0;
+	iBufLen = -1;
 }
 
 MString::MString(const MString &stringSrc) { //100%
 	headMNode = copy(stringSrc.headMNode, tailMNode);
 	precision = 3;
+	pcStr = NULL;
+//	iBufferInUse = 0;
+	iBufLen = -1;
 }
 
-MString::MString(char ch, int nRepeat) { //100%
+MString::MString(const char ch, int nRepeat) { //100%
 	if (nRepeat < 1) 
 		return;
 
@@ -196,18 +242,23 @@ MString::MString(char ch, int nRepeat) { //100%
 	}
 	tailMNode = tmp;
 	precision = 3;
+	pcStr = NULL;
+//	iBufferInUse = 0;
+	iBufLen = -1;
 }
 
 
-MString::MString(char* string) { //100%
+MString::MString(const char* string) { //100%
 
-	int i = 0;
-	if (string==NULL) {
-		headMNode=NULL;
-		tailMNode=NULL;
-		precision=3;
+	headMNode = NULL;
+	tailMNode = NULL;
+    precision = 3;
+
+    int i = 0;
+	if (string==NULL) 
+    {
 		return;
-		}
+	}
 	
 	headMNode = new MNode(string[i]);
 	MNode *tmp = headMNode;
@@ -221,12 +272,48 @@ MString::MString(char* string) { //100%
 	tailMNode = tmp;
 
 	precision = 3;
+	pcStr = NULL;
+//	iBufferInUse = 0;
+	iBufLen = -1;
+}
 
+MString::MString(const char* string, int maxlen) { //100%
+
+	headMNode = NULL;
+	tailMNode = NULL;
+    precision = 3;
+
+    int i = 0;
+	if (string==NULL) 
+    {
+		return;
+	}
+	
+	headMNode = new MNode(string[i]);
+	MNode *tmp = headMNode;
+
+
+	for (i = 1; (i < maxlen) && (string[i] != '\0'); i++) {
+		tmp->MLink_Forward = new MNode(string[i]);
+
+		tmp=tmp->MLink_Forward;
+	}
+	tailMNode = tmp;
+
+
+	pcStr = NULL;
+//	iBufferInUse = 0;
+	iBufLen = -1;
 }
 
 MString::MString(int num) {
 
-	deallocate(headMNode);
+    headMNode = NULL;
+	tailMNode = NULL;
+	precision = 3;
+
+
+	//deallocate(headMNode);
 
 	int k = 1,
 		single = 0;
@@ -240,17 +327,26 @@ MString::MString(int num) {
 	}
 	tmp.MakeReverse();
 	headMNode = copy(tmp.headMNode, tailMNode);
+	pcStr = NULL;
+//	iBufferInUse = 0;
+	iBufLen = -1;
 }
 
 MString::MString(double num) {
 
-	deallocate(headMNode);
+	headMNode = NULL;
+	tailMNode = NULL;
+	precision = 3;
+
+    //deallocate(headMNode);
 
 	MString tmp;
 	tmp.SetPrecision(GetPrecision());
 	tmp += num;
 	headMNode = copy(tmp.headMNode, tailMNode);
-
+	pcStr = NULL;
+//	iBufferInUse = 0;
+	iBufLen = -1;
 }
 
 
@@ -455,7 +551,7 @@ const MString& MString::operator=(char ch) {  //100%
 	return *this;
 }
 
-const MString& MString::operator=(char* string) {  //100%
+const MString& MString::operator=(const char* string) {  //100%
 
 	deallocate(headMNode);
 
@@ -532,6 +628,14 @@ const MString& MString::operator =(float num) { //100%
 
 }
 
+//Begin added operators by Bruce Riggins ---------------
+//MString::operator char * () const
+MString::operator const char * () const
+{
+	MString * m = (MString *) this;
+	return m->GetBuffer(GetLength());
+}
+//End added operators by Bruce Riggins -----------------
 
 MString operator +(const MString& string1, const MString& string2) { //100%
 
@@ -799,14 +903,14 @@ bool operator==(const MString& s1, const MString& s2) { //tested 90%
 }
 
 
-bool operator==(const MString& s1, char* s2) {//tested 90% 
+bool operator==(const MString& s1, const char* s2) {//tested 90%
 
 	if (s1.Compare(s2) != 0)
 		return false;
 	return true;
 }
 
-bool operator==(char* s1, const MString& s2) {//tested 90% 
+bool operator==(const char* s1, const MString& s2) {//tested 90%
 	if (s2.Compare(s1) != 0)
 		return false;
 	return true;
@@ -941,7 +1045,7 @@ bool operator >=(char* s1, const MString& s2){//tested 90%
 }
 
 
-int MString::Compare(char* string) const { //not fully tested
+int MString::Compare(const char* string) const { //not fully tested
 	//Idea from CString
 	
 	//This function is pretty well optimized
@@ -966,7 +1070,7 @@ int MString::Compare(char* string) const { //not fully tested
 
 }
 
-int MString::Compare(MString string) const {
+int MString::Compare(const MString& string) const {
 
 	
 	MNode *tmpString = string.headMNode;
@@ -995,7 +1099,7 @@ int MString::Compare(MString string) const {
 
 
 
-int MString::CompareNoCase(char string[]) const { //not fully tested
+int MString::CompareNoCase(const char * string) const { //not fully tested
 	//Idea from CString
 /*
 	MString tmpStr1(string);
@@ -1231,7 +1335,7 @@ char* MString::ToChar(int nStart) {
 int MString::ToInt(int nStart) {
 
 	if ((nStart < 0) || (nStart > GetLength()))
-		return NULL;
+		return 0;
 
 	MNode*tmp = TravelList(headMNode, nStart);
 
@@ -1452,6 +1556,24 @@ int MString::Delete(int nIndex, int nCount) {
 	return GetLength();
 
 }
+
+//Additions by Bruce Riggins 11/14/00
+// Use the given data to build a string.
+#ifdef WIN32
+#define vsnprintf _vsnprintf
+#endif
+//
+void MString::Format(char * sFormat, ...)
+{
+	char * s = new char[2000];
+	va_list arglist;
+	va_start(arglist, sFormat);
+	vsnprintf(s, 2000, sFormat, arglist);
+	va_end(arglist);
+	*this = s;
+	delete s;
+}
+// End additions by Bruce Riggins 11/14/00
 
 void MString::Trim() { 
 	//Original MString
@@ -1689,3 +1811,73 @@ int MString::FindOneOf(char* string) const {
 
 
 //End Searching -------------------------------------------
+
+//Begin Buffer Access -------------------------------------
+	// Additions by Bruce Riggins 11/7/00
+	// Access to string implementation buffer as "C" character array
+char * MString::GetBuffer(int nMinBufLength) {
+	//Idea from CString
+//	char * pc = NULL;
+	
+	if (pcStr) {
+		// if buffer is in existence already, simply delete it and start over
+		delete pcStr;	
+	}
+	
+	// create a buffer and copy list to it
+  	int iLen = GetLength();
+  	iLen = iLen < nMinBufLength ? nMinBufLength : iLen;
+  	pcStr = new char[iLen + 1];	// room for trailing zero
+  	if (pcStr) {
+  		char * tmppc = pcStr;
+  		MNode * pn = headMNode;
+  		iBufLen = iLen;
+  		while (pn) {
+  			*tmppc++ = pn->MInfo;
+  			pn = pn->MLink_Forward;
+  		}			
+  	}		
+	
+	return pcStr;
+}
+
+void MString::ReleaseBuffer(int nNewLength) {
+	//Idea from CString
+	if (pcStr){
+		if (nNewLength == -1) {
+		   *this = pcStr;
+		}
+		else {
+			*this = pcStr;
+		}
+		
+		if (pcStr) {
+			delete pcStr;
+			pcStr = NULL;
+//			iBufferInUse = 0;
+		}
+	}
+}
+	
+//	LPTSTR GetBufferSetLength(int nNewLength);	//Idea from CString
+//	void FreeExtra();	//Idea from CString
+
+// Use LockBuffer/UnlockBuffer to turn refcounting off
+char * MString::LockBuffer() {
+	//Idea from CString
+	
+	// Simple, non-functional implementation
+	return pcStr;
+}
+	
+void MString::UnlockBuffer() {
+	//Idea from CString
+	
+	// Simple, non-functional implementation
+	return;
+}
+	
+	// End of BR additions
+
+//End Buffer Access ---------------------------------------
+
