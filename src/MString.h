@@ -1,5 +1,5 @@
 /*  MString - Dynamic string data type library
-    Copyright (C) 2001 Jesse L. Lovelace
+    Copyright (C) 2001-2004 Jesse L. Lovelace
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 /*  MString by Jesse Lovelace (mentat)
 	jllovela@eos.ncsu.edu
 
-  (MString began as GString but was changed to remain compatible with
+    (MString began as GString but was changed to remain compatible with
 	gtk+'s GString data type.)
 
 	http://mstring.sourceforge.net
@@ -49,7 +49,8 @@
 
 	Enjoy.
 
-	Thanks to:  
+	Thanks to:
+        Briam Matherly - Project manager and developer.  
         Balint Toth - Fixed insert bug and new features,
         Bruce Riggins - New char * code,
         Dingo - pointer debugging, 
