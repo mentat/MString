@@ -1,5 +1,5 @@
 /*  MStringArray - Dynamic Array of MString objects
-    Copyright (C) 2000 Jesse L. Lovelace (jllovela@eos.ncsu.edu)
+    Copyright (C) 2001 Jesse L. Lovelace (jllovela@eos.ncsu.edu)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

@@ -1,24 +1,36 @@
-/*  MString - Dynamic string data type library
-    Copyright (C) 2000 Jesse L. Lovelace (jllovela@eos.ncsu.edu)
+/*  
+  $Id: MString.cpp,v 1.3 2001/10/17 13:23:53 thementat Exp $
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+  MString - Dynamic string data type library
+  Copyright (C) 2001 Jesse L. Lovelace (jllovela@eos.ncsu.edu)
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+  -----
+    $Log: MString.cpp,v $
+    Revision 1.3  2001/10/17 13:23:53  thementat
+    Added new code by Balint Toth and revised headers.
+
 */
+
 #include <fstream.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include "MString.h"
+
+#define MIN(a,b) ((a)<(b) ? (a) : (b))
 
 class MNode {
 public:
@@ -251,13 +263,21 @@ MString::MString(const char ch, int nRepeat) { //100%
 MString::MString(const char* string) { //100%
 
 	headMNode = NULL;
+
 	tailMNode = NULL;
+
     precision = 3;
 
+
+
     int i = 0;
+
 	if (string==NULL) 
+
     {
+
 		return;
+
 	}
 	
 	headMNode = new MNode(string[i]);
@@ -280,11 +300,16 @@ MString::MString(const char* string) { //100%
 MString::MString(const char* string, int maxlen) { //100%
 
 	headMNode = NULL;
+
 	tailMNode = NULL;
+
     precision = 3;
+
+
 
     int i = 0;
 	if (string==NULL) 
+
     {
 		return;
 	}
@@ -308,9 +333,14 @@ MString::MString(const char* string, int maxlen) { //100%
 
 MString::MString(int num) {
 
+
     headMNode = NULL;
+
 	tailMNode = NULL;
+
 	precision = 3;
+
+
 
 
 	//deallocate(headMNode);
@@ -327,6 +357,7 @@ MString::MString(int num) {
 	}
 	tmp.MakeReverse();
 	headMNode = copy(tmp.headMNode, tailMNode);
+
 	pcStr = NULL;
 //	iBufferInUse = 0;
 	iBufLen = -1;
@@ -335,8 +366,12 @@ MString::MString(int num) {
 MString::MString(double num) {
 
 	headMNode = NULL;
+
 	tailMNode = NULL;
+
 	precision = 3;
+
+
 
     //deallocate(headMNode);
 
@@ -345,7 +380,9 @@ MString::MString(double num) {
 	tmp += num;
 	headMNode = copy(tmp.headMNode, tailMNode);
 	pcStr = NULL;
+
 //	iBufferInUse = 0;
+
 	iBufLen = -1;
 }
 
@@ -1307,25 +1344,39 @@ MString MString::SpanExcluding(char* string) const {
 	return tmpStr;
 }
 
-char* MString::ToChar(int nStart) {
+char* MString::ToChar(int nStart,int nCount) {
 
 	int length = GetLength(),
 		count = 0;
 
 	char* myChar = NULL;
 
-	if ((nStart < 0) || (nStart >= length))
+  if ((nStart < 0) || (nStart >= length) ||  nCount==0)
 		return myChar;
-	
 
-	myChar = new char[(length - nStart) + 1]; //a new char string, +1 is for null
-	MNode* tmp = TravelList(headMNode, nStart);
+  if (nCount > 0)
+  {
+    myChar = new char[(MIN(nCount+nStart,length) - nStart) + 1]; //a new char string, +1 is for null
+    MNode* tmp = TravelList(headMNode, nStart);
 
-	for (int i = nStart; i < length; i++) {
+    for (int i = 0; i < MIN((length-nStart),nCount); i++) 
+    {
+      myChar[count++] = tmp->MInfo;
+      tmp = tmp->MLink_Forward;
+    }
+  }
+  else
+  {
+    myChar = new char[(length - nStart) + 1]; //a new char string, +1 is for null
+    MNode* tmp = TravelList(headMNode, nStart);
 
-		myChar[count++] = tmp->MInfo;
-		tmp = tmp->MLink_Forward;
-	}
+    for (int i = nStart; i < length; i++) 
+    {
+      myChar[count++] = tmp->MInfo;
+      tmp = tmp->MLink_Forward;
+    }
+  }
+
 
 	myChar[count] = '\0'; //add ending null;
 	return myChar;
@@ -1405,8 +1456,11 @@ int MString::Replace(char chOld, char chNew) {
 			tmp->MInfo = chNew;
 			timesReplaced++;
 		}
+
 		tmp = tmp->MLink_Forward; 
+
 		//Thanks to Michael Scheuner for pointing out the missing line (above)
+
 
 	}
 	return timesReplaced;
@@ -1461,9 +1515,13 @@ int MString::Insert(int nIndex, char ch) {
 	if (nIndex >= length) //i don't know if I should pad the string or not
 		nIndex = length;
 
-	if (0 == nIndex) {
-		headMNode = tailMNode = new MNode(ch, headMNode);
-		return 1;
+	if (0 == nIndex) 
+  {
+    headMNode =  new MNode(ch, headMNode);
+    if (!tailMNode)
+      tailMNode=headMNode;
+
+		return (length + 1);
 	}
 
 
@@ -1794,14 +1852,14 @@ int MString::ReverseFind(char* string) const {
 }
 
 
-int MString::FindOneOf(char* string) const { 
+int MString::FindOneOf(char* string,int nStart) const { 
 	//Idea from CString
 	if (!headMNode) 
 		return -1;
 
 	int strLen = string_length(string);
 
-	for (int i = 0; i < strLen; i++) {
+	for (int i = nStart; i < strLen; i++) {
 		if (Find(string[i]) >= 0)
 			return i;
 	}

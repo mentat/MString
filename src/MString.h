@@ -1,5 +1,5 @@
 /*  MString - Dynamic string data type library
-    Copyright (C) 2000 Jesse L. Lovelace
+    Copyright (C) 2001 Jesse L. Lovelace
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,10 +24,10 @@
 /*  MString by Jesse Lovelace (mentat)
 	jllovela@eos.ncsu.edu
 
-    (MString began as GString but was changed to remain compatible with
+  (MString began as GString but was changed to remain compatible with
 	gtk+'s GString data type.)
 
-	http://www4.ncsu.edu/~jllovela/MString/
+	http://mstring.sourceforge.net
 
 	MString is a string library that uses dynamically sizable character
 	strings.  To do this I used linked lists instead of dynamic arrays for
@@ -49,16 +49,19 @@
 
 	Enjoy.
 
-	Thanks to:  Dingo - pointer debugging, 
+	Thanks to:  
+        Balint Toth - Fixed insert bug and new features,
+        Bruce Riggins - New char * code,
+        Dingo - pointer debugging, 
 				Rask - math and Trim(char ch), 
 				Botch - debugging and advice,
 				Antiloop - for phat grooves.
 
-	(Last modified September 4, 2000)
+	(Last modified October 10, 2001)
 */
 
 const int MAX_PRECISION = 9; //due to bad double to string code.
-const char MString_VERSION[8] = "0.61";
+const char MString_VERSION[8] = "0.61a";
 //typedef const char * LPCSTR;
 
 #include <fstream.h>
@@ -261,7 +264,7 @@ public:
 	MString Right(int nCount) const; //Idea from CString
 	MString SpanIncluding(char* string) const; //Idea from CString
 	MString SpanExcluding(char* string) const; //Idea from CString
-	char* ToChar(int nStart = 0); 
+	char* ToChar(int nStart = 0,int nCount = -1); 
 	// PRE: nStart is >0 and < GetLength().
 	// POST: returns a pointer to a new null-terminated character array
 	//       that is a copy of the infomation in the MString.
@@ -322,7 +325,8 @@ public:
 
 	int ReverseFind(char ch) const; //Idea from CString
 	int ReverseFind(char* string) const; //MString original
-	int FindOneOf(char* string) const; //Idea from CString
+	int FindOneOf(char* string,int nStart = 0 ) const; //Idea from CString
+
 
 //End Searching -------------------------------------------
 
