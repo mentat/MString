@@ -1,0 +1,108 @@
+Function Reference:
+
+See http://www4.ncsu.edu/~jllovela/MString/functions.html for in-depth
+function information.
+
+MString Class Members
+
+Construction
+
+  MString - Constructs MString objects in various ways  
+
+--------------------------------------------------------------------------------
+
+The String as an Array 
+
+  GetLength - Returns the number of characters in a MString object (not 
+    including the NULL). 
+  IsEmpty - Tests if the MString object contains no characters. 
+  Empty - Erases the string and frees memory. Forces string to have 0 length. 
+  GetAt - Returns the character at a given position 
+  operator [] - Returns the character at a given position - operator 
+    substituion for GetAt. 
+  SetAt - Sets a character at a given position. 
+
+--------------------------------------------------------------------------------
+
+Assignment/Concatenation
+
+  operator = - Assigns a new value to a MString object.¢ 
+  operator + - Concatenates two strings and returns a new string.¢ 
+  operator += - Concatenates a new string to the end of an existing string.¢ 
+
+--------------------------------------------------------------------------------
+
+Comparison
+
+  operator == <. etc. - Comparison operators (case sensitive). 
+  Compare - Compares two strings (case sensitive). 
+  CompareNoCase - Compares two strings (case insensitive). 
+  Collate - Compares two strings (case sensitive, uses locale-specific 
+    information). 
+  CollateNoCase - Compares two strings (case insensitive, uses locale-specific 
+    information). 
+
+--------------------------------------------------------------------------------
+
+Extraction
+
+  Mid - Extracts the middle part of a string. 
+  Left - Extracts the left part of a string. 
+  Right - Extracts the right part of a string. 
+  SpanIncluding - Extracts a substring that contains only the characters in a 
+    set. 
+  SpanExcluding - Extracts a substring that contains only the characters not 
+    in a set. 
+
+--------------------------------------------------------------------------------
+
+Other Conversions
+
+  MakeUpper - Converts all the characters in this string to uppercase 
+    characters. 
+  MakeLower - Converts all the characters in this string to lowercase 
+    characters. 
+  MakeReverse - Reverses the characters in this string 
+  Replace - Replaces indicated characters with other characters. 
+  Remove - Removes indicated characters from a string. 
+  Insert - Inserts a single character or a substring at the given index within
+    the string. 
+  Delete - Deletes a character or characters from a string.  
+  TrimLeft - Trim leading whitespace characters from the string. ¢ 
+  TrimRight - Trim trailing whitespace characters from the string.¢ 
+  Trim - Trim trailing and leading characters from the string.£ 
+
+--------------------------------------------------------------------------------
+
+Searching
+
+  Find - Finds a character or substring inside a larger string. 
+  ReverseFind - Finds a character inside a larger string; starts from the end. 
+  FindOneOf - Finds the first matching character from a set. 
+
+--------------------------------------------------------------------------------
+
+Input/Output Streams
+
+  operator << - Sends a MString object to an output stream.* 
+  operator >> - Extracts a MString object from an input stream.* 
+  getline - Extracts a MString object from a line of input.* 
+
+--------------------------------------------------------------------------------
+
+Precision
+
+  SetPrecision - Set's the floating point precision.£ 
+  GetPrecision - Returns the floating point precision.£ 
+
+--------------------------------------------------------------------------------
+ 
+
+Windows-Specific and Buffer Access functions are not included in MString.
+
+* Indicates function is not compatible with the similar MFC CString function. 
+
+¢ Indicates function maintains MFC CString compatibilty but also has new 
+    overloaded cases that expand functionality.
+
+£ Indicates a MString original member function.

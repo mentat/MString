@@ -1,0 +1,47 @@
+MString & MStringArray - Dynamic string data type library
+Copyright (C) 2000 Jesse L. Lovelace
+
+.1BETA - Initial release as GString.
+
+.2BETA (non-released) - Name changed to MString to avoid imcompatibilty
+      with gtk+ (which has a GString data type).
+
+.3 - * Recursive rewrite of Reverse()
+     * Rewrote many functions to improve speed and decrease mem usage
+	 * Added MNode * tailMNode to MString object.  Concatination
+        speed increased greatly. Size increased by sizeof(MNode*)
+     * Header file cleaned up a little.
+	 * Input operators accually work now. :(
+	 * testG() now reports head and tail node pointers
+
+.3.1 - * Additional header file documentaion added, more information on
+          each function included.
+
+0.3.2 - * Added char& operator [](int nIndex) function with allows []
+          access at lefthand value (you can set the char using [], CString
+          does not allow this)
+        * Added char* ToChar() which returns a pointer to a character string
+          containing a copy of the contents in the MString object.
+        * Added Split() function to MStringArray.
+	* Added ToInt();
+	* Find() rewritten for speed.
+	* "char string[]" notation removed, all char strings are now 
+	   "char* string"
+	* Replace() rewritten for speed.
+	* SpanExcluding & SpanIncluding rewritten for speed.
+
+0.5.0 - * Changed a bunch of stuff and I hope it all still works. :)
+	* First release of MStringArray (BETA 1)
+
+0.50a - * Included a configure script (need feedback on if this works
+	well).
+
+0.60  - * I'm back from the summer!!!  Fixed varius bugs and am working on 
+	new features.  Thanks to: Sven Dawitz, Sean Rae, & Shaohui Yan
+	for their bug reports.
+	* Fixed (hopefully) insert() bug.
+	* You can now do '+' with integers.
+	* Other misc bugfixes.
+	* Working on the makefile problems.
+
+0.60a - * Fixed bug in double number conversion--thanks to Danny Horswell.

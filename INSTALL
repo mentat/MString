@@ -1,0 +1,61 @@
+MString by Jesse Lovelace
+http://www4.ncsu.edu/~jllovela/MString/
+
+Please send all bug reports/suggestions/comments to:
+jllovela@eos.ncsu.edu
+
+-------------------------------------------------------------------------
+Installation
+
+The simplest way to compile this package is:
+
+(Note, you do not need to install MString to use it, you can simply copy
+the header and source files from the src directory to the directory of
+your source code)
+
+  1. Type `./configure' to configure the package for your system.  If 
+     you're using `csh' on an old version of System V, you might need 
+	 to type `sh ./configure' instead to prevent `csh' from trying to 
+	 execute `configure' itself.
+
+     Running `configure' takes awhile.  While running, it prints some
+     messages telling which features it is checking for.
+
+  2. Type `make' to compile the package.
+
+  3. Optionally, type `make check' to run any self-tests that come with
+     the package.
+
+  4. Type `make install' to install the programs and any data files and
+     documentation.
+
+  5. You can remove the program binaries and object files from the
+     source code directory by typing `make clean'.  To also remove the
+     files that `configure' created (so you can compile the package for
+     a different kind of computer), type `make distclean'.
+
+'make install' will put libMString.a and libMStringArray.a in your
+lib directory (/usr/local/lib on my FreeBSD machine).  MString.h and
+MStringArray.h will go in the include directory (/usr/local/include on
+mine).  
+ 
+------------------------------------------------------------------------
+Using MString
+
+To use the MString library you must add the -l flag to your gcc compatible
+compiler (I don't know the link command on other compilers).
+
+ie:  g++ -o MyProg MyProg.o -lMString
+     (to access MString)
+--or--
+     g++ -o MyProg MyProg.o -lMStringArray
+     (to use MString and MStringArray)
+
+Some unix flavors do not find the libraries in /usr/local/lib/.  To solve
+this you need to either add /usr/local/lib/ to your library search path or
+copy libMString.a and libMStringArray.a from /usr/local/lib/ to /usr/lib/,
+also copy MString.h and MStringArray.h from /usr/local/include/ to
+/usr/include/.
+
+In addition you can edit the Makefile in the src directory and change the
+line that says 'prefix' to /usr/lib/ instead of /usr/local/lib

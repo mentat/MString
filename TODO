@@ -1,0 +1,18 @@
+To Do List for MString and MStringArray
+
+[ ] - Rewrite Delete function for speed.
+[!] - Finish MStringArray Code
+[!] - Replace all internal GetAt calls with TravelList
+[!] - Replace all local list traversals with TravelList (maybe)
+[ ] - Write true Collate functions (MString)
+[!] - Finish Docs
+[X] - Include install for linux (./configure, etc.)
+[ ] - Include man file.
+[ ] - Create .rpm distro
+[ ] - include version w/o #include <fstream.h>
+[ ] - Add sorting (quicksort)
+[ ] - printf
+[ ] - UNICODE
+
+! - in progress
+X - done
