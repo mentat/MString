@@ -16,10 +16,12 @@
     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#include <fstream.h>
-#include <iostream.h>
+#include <fstream>
+#include <iostream>
 #include "MStringArray.h"
 #include "MString.h"
+
+using namespace std;
 
 class MArrayNode {
 public:
