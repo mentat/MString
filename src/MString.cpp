@@ -1,8 +1,8 @@
 /*  
-  $Id: MString.cpp,v 1.4 2004/12/01 19:41:42 pez4brian Exp $
+  $Id: MString.cpp,v 1.5 2004/12/01 21:04:10 thementat Exp $
 
   MString - Dynamic string data type library
-  Copyright (C) 2001 Jesse L. Lovelace (jllovela@eos.ncsu.edu)
+  Copyright (C) 2001-2004 Jesse L. Lovelace (jesse at aslogicsys dot com)
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -20,6 +20,9 @@
 
   -----
     $Log: MString.cpp,v $
+    Revision 1.5  2004/12/01 21:04:10  thementat
+    Updating contact info.
+
     Revision 1.4  2004/12/01 19:41:42  pez4brian
     Various changes and bug-fixes
 
@@ -479,7 +482,7 @@ int MString::GetPrecision() const { //100%
 
 MString MString::ReturnLicense() {  //100%
 	MString license;
-	license = "MString - Dynamic string data type library\nCopyright (C) 2000 Jesse L. Lovelace\nThis program is free software; you can redistribute it and/or modify\nit under the terms of the GNU General Public License as published by\nthe Free Software Foundation; either version 2 of the License, or\n(at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\nYou should have received a copy of the GNU General Public License\nalong with this program; if not, write to the Free Software\nFoundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n";
+	license = "MString - Dynamic string data type library\nCopyright (C) 2000-2004 Jesse L. Lovelace\nThis program is free software; you can redistribute it and/or modify\nit under the terms of the GNU General Public License as published by\nthe Free Software Foundation; either version 2 of the License, or\n(at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\nYou should have received a copy of the GNU General Public License\nalong with this program; if not, write to the Free Software\nFoundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n";
 
 	return license;
 }
