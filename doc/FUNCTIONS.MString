@@ -40,7 +40,9 @@ Comparison
   Collate - Compares two strings (case sensitive, uses locale-specific 
     information). 
   CollateNoCase - Compares two strings (case insensitive, uses locale-specific 
-    information). 
+    information).
+  CompareGlob - Matches strings against globs. In a glob, a "?" matches any 
+    character and an "*" matches any string. £
 
 --------------------------------------------------------------------------------
 
