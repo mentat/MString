@@ -45,3 +45,31 @@ Copyright (C) 2000 Jesse L. Lovelace
 	* Working on the makefile problems.
 
 0.60a - * Fixed bug in double number conversion--thanks to Danny Horswell.
+
+0.61b - * Changed #include <iostream.h> to the depreciated form of 
+          #include <iostream> and added the "using" lines to make it still
+          compile. Also changed #inlcude <fstream.h> to #include <fstream>
+        * Fixed bug in GetBuffer; it didn't add the terminiating null '\0'.
+          Should Fix Bug# 784452
+        * Fixed bug in constructor "MString(const char * string)"; it did not
+          like a string where the only character is a null '\0'.
+        * Also fixed "MString(const char * string, int nLength)".
+        * Added Functionality to ToInt() so that it can take a negative number.
+        * Added ToDouble() based on the ToInt() class.
+        * Made char* in Format() const char*
+        * Fixed the ReleaseBuffer() function to handle when a new length
+          parameter is passed in. Hopefully ;)
+        * Added functions CompareGlob (public) and Gmatch (private) for 
+          performing wildcard comparisons.
+        * Fixed int constructor and int operator= to handle zero
+        * Hopefully fixed the Compare( char* ) function to handle strings that
+          are the same up to a point, but one is longer than the other.
+          e.g. "abc" != "abcd".
+        * Some initializing functions handled an empty string differently.
+          Now, initializing an MString from an empty string (ie str[0] = '\0'
+          results in an MString with no allocated nodes. 
+          Should Fix Bug# 1062897
+        * Fixed the ReleaseBuffer() function to handle when a new length
+          parameter is NOT passed in. Hopefully ;)
+        * Added "=" to (nIndex >= GetLength()) in GetAt() and operator[].
+        * Added operator!=(const MString& s1, const char* s2)
