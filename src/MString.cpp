@@ -1,5 +1,5 @@
 /*  
-  $Id: MString.cpp,v 1.5 2004/12/01 21:04:10 thementat Exp $
+  $Id: MString.cpp,v 1.6 2004/12/15 14:57:46 pez4brian Exp $
 
   MString - Dynamic string data type library
   Copyright (C) 2001-2004 Jesse L. Lovelace (jesse at aslogicsys dot com)
@@ -20,6 +20,9 @@
 
   -----
     $Log: MString.cpp,v $
+    Revision 1.6  2004/12/15 14:57:46  pez4brian
+    Fixed bug in Find
+
     Revision 1.5  2004/12/01 21:04:10  thementat
     Updating contact info.
 
@@ -1959,7 +1962,7 @@ int MString::Find(char* string, int nStart) const {
 			int strPos = 0;
 			MNode* subTmp = tmp;
 			
-			while ( (tmp) && (string[strPos] != '\0') ) {
+			while ( (subTmp) && (string[strPos] != '\0') ) {
 				if  (subTmp->MInfo == string[strPos++])
 					found = true;
 				else {
@@ -1968,7 +1971,7 @@ int MString::Find(char* string, int nStart) const {
 				}
 				subTmp = subTmp ->MLink_Forward;
 			}
-			if (found == true)
+			if( (found == true) && (strPos == strLength) )
 				return nStart;
 		}
 		tmp = tmp->MLink_Forward;
@@ -2053,7 +2056,6 @@ int MString::FindOneOf(char* string) const {
 	// Access to string implementation buffer as "C" character array
 char * MString::GetBuffer(int nMinBufLength) {
 	//Idea from CString
-//	char * pc = NULL;
 	
 	if (pcStr) {
 		// if buffer is in existence already, simply delete it and start over

@@ -50,19 +50,19 @@
 	Enjoy.
 
 	Thanks to:
-        Briam Matherly - Project manager and developer.  
-        Balint Toth - Fixed insert bug and new features,
-        Bruce Riggins - New char * code,
-        Dingo - pointer debugging, 
-				Rask - math and Trim(char ch), 
-				Botch - debugging and advice,
-				Antiloop - for phat grooves.
+      Brian Matherly - Project manager and developer.  
+      Balint Toth - Fixed insert bug and new features,
+      Bruce Riggins - New char * code,
+      Dingo - pointer debugging, 
+      Rask - math and Trim(char ch), 
+      Botch - debugging and advice,
+      Antiloop - for phat grooves.
 
-	(Last modified December 1, 2004)
+	(Last modified December 15, 2004)
 */
 
 const int MAX_PRECISION = 9; //due to bad double to string code.
-const char MString_VERSION[8] = "0.61b";
+const char MString_VERSION[8] = "0.61c";
 //typedef const char * LPCSTR;
 
 #include <fstream>
