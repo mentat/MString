@@ -57,14 +57,14 @@
 				Botch - debugging and advice,
 				Antiloop - for phat grooves.
 
-	(Last modified October 10, 2001)
+	(Last modified December 1, 2004)
 */
 
 const int MAX_PRECISION = 9; //due to bad double to string code.
-const char MString_VERSION[8] = "0.61a";
+const char MString_VERSION[8] = "0.61b";
 //typedef const char * LPCSTR;
 
-#include <fstream.h>
+#include <fstream>
 
 class MNode;
 
@@ -79,15 +79,15 @@ class MString {
 
 //Begin overloaded stream functions -----------------------
 
-	friend ostream& operator<< (ostream& out, const MString& string); 
+	friend std::ostream& operator<< (std::ostream& out, const MString& string); 
 	// PRE: out is a valid output stream, string is a valid MString
 	// POST: contents of string are sent to stream out.
 
-	friend istream& operator>> (istream& in, MString& string); 
+	friend std::istream& operator>> (std::istream& in, MString& string); 
 	// PRE: in is a valid input stream, string is a valid MString
 	// POST: characters in input stream are stored in string.
 
-	friend istream& getline(istream& in, MString& string); 
+	friend std::istream& getline(std::istream& in, MString& string); 
 	// PRE: in is valid input stream, sting is a valid MString
 	// POST: characters up to (and including) the newline are stored 
 	//       in string.
@@ -231,6 +231,7 @@ public:
 	friend bool operator!=(const MString& s1, const MString& s2); //Idea from CString
 	friend bool operator!=(const MString& s1, char* s2);
 	friend bool operator!=(char* s1, const MString& s2);
+	friend bool operator!=(const MString& s1, const char* s2);
 
 	friend bool operator <(const MString& s1, const MString& s2); //Idea from CString
 	friend bool operator <(const MString& s1, char* s2);
@@ -253,6 +254,8 @@ public:
 	int CompareNoCase(const char* string) const; //Idea from CString
 	int Collate(char* string) const; //Idea from CString
 	int CollateNoCase(char* string) const; //Idea from CString
+
+	bool CompareGlob(const MString& glob) const;
 
 //End Comparison operators --------------------------------
 
@@ -280,6 +283,8 @@ public:
 	//     myString.ToInt(0) returns 12345
 	//     myString.ToInt(1) returns 2345
 
+	double ToDouble( int nStart = 0 );
+
 //End Extraction operators --------------------------------
 
 //Begin Other Conversions ---------------------------------
@@ -297,7 +302,7 @@ public:
 
 	//Research Format
 // Additions by Bruce Riggins 11/14/00	
-	void Format(char * sFormat, ...);
+	void Format(const char * sFormat, ...);
 // End additions by Bruce Riggins 11/14/00	
 
 	void Trim(); //Original MString
@@ -325,7 +330,7 @@ public:
 
 	int ReverseFind(char ch) const; //Idea from CString
 	int ReverseFind(char* string) const; //MString original
-	int FindOneOf(char* string,int nStart = 0 ) const; //Idea from CString
+	int FindOneOf(char* string) const; //Idea from CStrin
 
 
 //End Searching -------------------------------------------
@@ -352,6 +357,8 @@ private:
 
 	MNode* GetPointerAt(int nIndex);
 	void deallocate(MNode *p); // added by Bruce Riggins
+
+	bool Gmatch( MNode* g, MNode* s ) const;
 	
 	char * pcStr;	
 	MNode *headMNode;
