@@ -46,7 +46,7 @@ Copyright (C) 2000 Jesse L. Lovelace
 
 0.60a - * Fixed bug in double number conversion--thanks to Danny Horswell.
 
-0.61b - * Changed #include <iostream.h> to the depreciated form of 
+0.62  - * Changed #include <iostream.h> to the depreciated form of 
           #include <iostream> and added the "using" lines to make it still
           compile. Also changed #inlcude <fstream.h> to #include <fstream>
         * Fixed bug in GetBuffer; it didn't add the terminiating null '\0'.

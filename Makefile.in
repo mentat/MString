@@ -10,7 +10,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-MVER = MString-0.60b
+MVER = MString-0.62
 
 SHELL = @SHELL@
 

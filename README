@@ -1,7 +1,8 @@
 MString - Dynamic string data type library
-Copyright (C) 2001 Jesse L. Lovelace (jllovela@eos.ncsu.edu)
+Copyright (C) 2001-2004 Jesse L. Lovelace 
+                        (thementat at users.sourceforge.net)
 
-http://www4.ncsu.edu/~jllovela/MString/
+http://mstring.sf.net
 
 MString is a sizeable string library implimented via linked lists. For a
 complete list of functions please see doc/FUNCTIONS.MString . MString is
@@ -10,7 +11,11 @@ released under the terms of the GPL (license).
 MStringArray is a dynamic array of MString objects.
 
 MString is currently under development!  Please submit any
-bugs/suggestions/comments to jllovela@eos.ncsu.edu
+bugs/suggestions/comments to:
+
+ Jesse [thementat at users.sourceforge.net] 
+   or
+ Brian Matherly [pez4brian at users.sourceforge.net]
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
