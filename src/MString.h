@@ -341,7 +341,7 @@ public:
 //Begin Buffer Access -------------------------------------
 	// Additions by Bruce Riggins 11/7/00
 	// Access to string implementation buffer as "C" character array
-	char * GetBuffer(int nMinBufLength);	//Idea from CString
+	char * GetBuffer(int nMinBufLength = -1);	//Idea from CString
 	void ReleaseBuffer(int nNewLength = -1);	//Idea from CString
 //	char * GetBufferSetLength(int nNewLength);	//Idea from CString
 //	void FreeExtra();	//Idea from CString
@@ -368,6 +368,10 @@ private:
 	int precision;
 	int iBufLen; // length of buffer minus 1 for null terminator
 	int iBufferInUse;
+
+   // flag to indicate that the MString has been modified since the
+   // last time char* GetBuffer() was called
+   bool bModified; 
 
 };
 

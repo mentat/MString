@@ -1,5 +1,5 @@
 /*  
-  $Id: MString.cpp,v 1.6 2004/12/15 14:57:46 pez4brian Exp $
+  $Id: MString.cpp,v 1.7 2005/03/28 15:37:06 pez4brian Exp $
 
   MString - Dynamic string data type library
   Copyright (C) 2001-2004 Jesse L. Lovelace (jesse at aslogicsys dot com)
@@ -20,6 +20,11 @@
 
   -----
     $Log: MString.cpp,v $
+    Revision 1.7  2005/03/28 15:37:06  pez4brian
+    Fix Delete
+    Optimize (const char*) operator
+    Clean up
+
     Revision 1.6  2004/12/15 14:57:46  pez4brian
     Fixed bug in Find
 
@@ -33,8 +38,9 @@
     Added new code by Balint Toth and revised headers.
 
    07-09-2003  Mike Golden:
-               Changed #include <iostream.h> to the depreciated form of #include <iostream>
-                  and added the "using" lines to make it still compile.
+               Changed #include <iostream.h> to the depreciated form of 
+                  #include <iostream> and added the "using" lines to make it 
+                  still compile.
                Also changed #inlcude <fstream.h> to #include <fstream>
 
    07-15-2003  Mike Golden:
@@ -42,12 +48,13 @@
 
 
    07-21-2003  Mike Golden:
-               Fixed bug in constructor "MString(const char * string)"; it did not like a string where
-                  the only character is a null '\0'.
+               Fixed bug in constructor "MString(const char * string)"; it did 
+                  not like a string where the only character is a null '\0'.
                Also fixed "MString(const char * string, int nLength)".
 
    07-23-2003  Mike Golden:
-               Added Functionality to ToInt() so that it can take a negative number.
+               Added Functionality to ToInt() so that it can take a negative 
+                  number.
 
    07-24-2003  Eric Westra:
                Added ToDouble() based on the ToInt() class.
@@ -60,20 +67,22 @@
                   parameter is passed in. Hopefully ;)
 
    01-13-2004 Brian Matherly
-               Added functions CompareGlob (public) and Gmatch (private) for performing wildcard 
-                  comparisons.
+               Added functions CompareGlob (public) and Gmatch (private) for 
+                  performing wildcard comparisons.
 
    05-25-2004 Brian Matherly
                Fixed int constructor and int operator= to handle zero
    
    06-03-2004 Joshua Iverson
-               Hopefully fixed the Compare( char* ) function to handle strings that are the
-               same up to a point, but one is longer than the other.  e.g. "abc" != "abcd".
+               Hopefully fixed the Compare( char* ) function to handle strings 
+                  that are the same up to a point, but one is longer than the 
+                  other.  e.g. "abc" != "abcd".
 
    17-06-2004 Brian Matherly
                Some initializing functions handled an empty string differently.
-               Now, initializing an MString from an empty string (ie str[0] = '\0'
-               results in an MString with no allocated nodes.
+               Now, initializing an MString from an empty string 
+                  (ie str[0] = '\0' results in an MString with no 
+                  allocated nodes.)
                  
    06-24-2004 Joshua Iverson
                Fixed the ReleaseBuffer() function to handle when a new length
@@ -84,6 +93,33 @@
 
    09-22-2004 Jeff Van Roekel
                Added operator!=(const MString& s1, const char* s2)
+
+   01-25-2005 Eric Westra
+               optimized Compare( Mstring& ) fixed same problem as 06-03-2004
+               added default 0 to ToInt; skip GetLength and List Traversal if 0
+               added default -1 to GetBuffer to alert user that they don't have 
+                  to pass in a value
+
+   01-31-2005 Eric Westra
+               added bModified.  bModified is set to true in functions that 
+                  modify the MString. This way the pcstr does not need to be 
+                  built every time GetBuffer() is called. If no modifications 
+                  have been made to the MString just gives out a pointer to the 
+                  pcstr.  This is necessary to ensure the safety of static const 
+                  MStrings that perform a (const char*) conversion.  
+                  **WARNING**  The operator const char*() function is still NOT 
+                  safe.  Is still susceptable to a race condition on startup.
+
+   01-31-2005 Eric Westra
+               GetAt(), operator[], and SetAt().  All called GetLength() which 
+                  links forward through the list to find the length to see if 
+                  nIndex was in the list.  Then linked foward through the list 
+                  to that point.  Wasteful.  Rewrote so link forward until get 
+                  to that position or list ends.
+                  
+   03-14-2005 Brian Matherly
+               Fix Delete and remove unnecessary if statement.
+               Misc. Formatting.
 
 */
 
@@ -100,7 +136,7 @@ using std::endl;
 
 class MNode {
 public:
-	MNode(char ch, MNode* link = NULL) {MLink_Forward = link; MInfo = ch; } 
+   MNode(char ch, MNode* link = NULL) {MLink_Forward = link; MInfo = ch; } 
 	MNode *MLink_Forward;
 	char MInfo;
 };
@@ -181,10 +217,11 @@ void MString::deallocate(MNode* p)
 		delete tmp;
 		tmp = NULL;
 	}
-	if (pcStr) {
-		delete pcStr;
-		pcStr = NULL;
-//		iBufferInUse = 0;
+   if (pcStr) {
+      delete pcStr;
+      pcStr = NULL;
+      bModified = true;
+//    iBufferInUse = 0;
 	}
 }
 
@@ -291,23 +328,29 @@ MString::~MString() {
 }
 
 MString::MString() {  //100%
-	headMNode = NULL;
-	tailMNode = NULL;
-	precision = 3;
-	pcStr = NULL;
-//	iBufferInUse = 0;
-	iBufLen = -1;
+   bModified = true;
+
+   headMNode = NULL;
+   tailMNode = NULL;
+   precision = 3;
+   pcStr = NULL;
+// iBufferInUse = 0;
+   iBufLen = -1;
 }
 
 MString::MString(const MString &stringSrc) { //100%
-	headMNode = copy(stringSrc.headMNode, tailMNode);
-	precision = 3;
-	pcStr = NULL;
-//	iBufferInUse = 0;
-	iBufLen = -1;
+   bModified = true;
+   
+   headMNode = copy(stringSrc.headMNode, tailMNode);
+   precision = 3;
+   pcStr = NULL;
+// iBufferInUse = 0;
+   iBufLen = -1;
 }
 
 MString::MString(const char ch, int nRepeat) { //100%
+   bModified = true; 
+
 	if (nRepeat < 1) 
 		return;
 
@@ -327,6 +370,7 @@ MString::MString(const char ch, int nRepeat) { //100%
 }
 
 MString::MString(const char* string) { //100%
+   bModified = true; 
 
 	headMNode = NULL;
 	tailMNode = NULL;
@@ -358,6 +402,7 @@ MString::MString(const char* string) { //100%
 }
 
 MString::MString(const char* string, int maxlen) { //100%
+   bModified = true; 
 
 	headMNode = NULL;
 	tailMNode = NULL;
@@ -388,6 +433,7 @@ MString::MString(const char* string, int maxlen) { //100%
 }
 
 MString::MString(int num) {
+   bModified = true; 
 
 	headMNode = NULL;
 	tailMNode = NULL;
@@ -420,6 +466,7 @@ MString::MString(int num) {
 }
 
 MString::MString(double num) {
+   bModified = true; 
 
 	headMNode = NULL;
 	tailMNode = NULL;
@@ -473,6 +520,8 @@ MString MString::GetGVersion() { //100%
 //Begin Precision Functions -------------------------------
 
 void MString::SetPrecision(int num){ //100%
+   bModified = true;
+
 	if (num > MAX_PRECISION)  //
 		return;
 	precision = num;
@@ -518,6 +567,7 @@ bool MString::IsEmpty() const { //100%
 }
 
 void MString::Empty() { //100%
+   bModified = true;
 
 	deallocate(headMNode);
 	headMNode = tailMNode = NULL;
@@ -525,16 +575,31 @@ void MString::Empty() { //100%
 
 char MString::GetAt(int nIndex) const {  //100%
 
-	// 9/15/2004 - Added "=" to (nIndex >= GetLength()) - jpi.
-	if ((nIndex < 0) || (nIndex >= GetLength()) || (IsEmpty()))
-		return 0;   //return's null if the nIndex is to big or small.
+   // 1/31/2005  EMW - GetAt calling GetLength which walks through
+   // the list to find length.  Then walking through the list to 
+   // the position we desired. Changed so walk to nIndex or end of
+   // MString and then stop.
+
+	if ((nIndex < 0) || (IsEmpty()))
+		return 0;   //return's null if MString is empty or to small.
 
 	MNode* tmp = headMNode;
 
-	for (int i = 0; i < nIndex; i++)
-		tmp=tmp->MLink_Forward;
+   int i = 0;
+   while( tmp && i < nIndex )  // while have node and less than nIndex
+   {
+      tmp=tmp->MLink_Forward;
+      ++i;
+   }
 
-	return tmp->MInfo;
+   if( !tmp ) 
+   {
+      return 0; // index too large return 0
+   }
+   else
+   {
+      return tmp->MInfo;// if last node is valid return MInfo
+   }
 }
 
 char MString::operator [](int nIndex) const {  //100%
@@ -546,29 +611,47 @@ char& MString::operator [](int nIndex) {
 	
 	char * nullChar = NULL;
 
-	// 9/15/2004 - Added "=" to (nIndex >= GetLength()) - jpi.
-	if ((nIndex < 0) || (nIndex >= GetLength()) || (IsEmpty()))
-		return *nullChar;   //return's null if the nIndex is to big or small.
+	if ((nIndex < 0) || (IsEmpty()))
+		return *nullChar;   //return's null if MString is empty or to small
 
 	MNode* tmp = headMNode;
 
-	for (int i = 0; i < nIndex; i++)
-		tmp=tmp->MLink_Forward;
+   int i = 0;
+   while( tmp && i < nIndex )  // while have node and less than nIndex
+   {
+      tmp=tmp->MLink_Forward;
+      ++i;
+   }
 
-	return tmp->MInfo;
+   if( !tmp ) // if last node is valid return MInfo
+   {
+      return *nullChar; // index too large return 0
+   }
+   else
+   {
+      return tmp->MInfo;// if last node is valid return MInf
+   }
 }
 
 void MString::SetAt(int nIndex, char ch) {  //100%
+   bModified = true;
 	
-	if ((nIndex < 0) || (nIndex >= GetLength()) || (IsEmpty()))
+	if ((nIndex < 0) || (IsEmpty()))
 		return;
 
 	MNode* tmp = headMNode;
 
-	for (int i = 0; i < nIndex; i++)
-		tmp=tmp->MLink_Forward;
+   int i = 0;
+   while( tmp && i < nIndex )  // while have node and less than nIndex
+   {
+      tmp=tmp->MLink_Forward;
+      ++i;
+   }
 
-	tmp->MInfo = ch;
+   if(tmp)
+   {
+      tmp->MInfo = ch;
+   }
 }
 
 //End String as Array Functions ---------------------------
@@ -626,6 +709,7 @@ std::istream& getline(std::istream& in, MString& string) { //100%
 const MString& MString::operator=(const MString& stringSrc) { //100%
 
 	if (this != &stringSrc) {
+      bModified = true;
 		deallocate(headMNode);
 		headMNode = copy(stringSrc.headMNode,tailMNode);
 	}
@@ -633,6 +717,7 @@ const MString& MString::operator=(const MString& stringSrc) { //100%
 }
 
 const MString& MString::operator=(char ch) {  //100%
+   bModified = true;
 
 	deallocate(headMNode);
 	headMNode = tailMNode = new MNode(ch);
@@ -640,6 +725,7 @@ const MString& MString::operator=(char ch) {  //100%
 }
 
 const MString& MString::operator=(const char* string) {  //100%
+   bModified = true;
 
 	deallocate(headMNode);
 
@@ -665,6 +751,7 @@ const MString& MString::operator=(const char* string) {  //100%
 }
 
 const MString& MString::operator =(int num) {   //100%
+   bModified = true;
 	//Original MString
 
 	//Thanks to Rask for the math!
@@ -690,6 +777,7 @@ const MString& MString::operator =(int num) {   //100%
 }
 
 const MString& MString::operator =(double num) { //100% 
+   bModified = true;
 	//Original MString
 
 	deallocate(headMNode);
@@ -703,8 +791,9 @@ const MString& MString::operator =(double num) { //100%
 }
 
 const MString& MString::operator =(float num) { //100% 
+   bModified = true;
 	//Original MString
-
+   
 	deallocate(headMNode);
 
 	MString tmp;
@@ -720,8 +809,8 @@ const MString& MString::operator =(float num) { //100%
 //MString::operator char * () const
 MString::operator const char * () const
 {
-	MString * m = (MString *) this;
-	return m->GetBuffer(GetLength());
+	MString * m = (MString *) this;   // BAD BAD BAD  Using pointer to get
+	return m->GetBuffer();            // around const.  Is there a fix for this?
 }
 //End added operators by Bruce Riggins -----------------
 
@@ -781,7 +870,6 @@ MString operator +(int num, const MString& string) {
 
 MString operator +(const MString& string, int num) {
 
-
 	MString tmpStr;
 	tmpStr = string;
 	tmpStr += num;
@@ -795,18 +883,20 @@ const MString& MString::operator +=(const MString& string) { //100%
 		return *this;
 	}
 
+   bModified = true;
 	MNode* toAdd = string.headMNode;
 
-	while (toAdd) {
-		if (!headMNode) {
-			headMNode = tailMNode = new MNode(toAdd->MInfo);
-			toAdd = toAdd->MLink_Forward;
-		}
-		else {
-			tailMNode->MLink_Forward = new MNode(toAdd->MInfo);
-			tailMNode = tailMNode->MLink_Forward;
-			toAdd = toAdd->MLink_Forward;
-		}
+   // EMW - moved out of loop, only need to check the first time
+	if (!headMNode) {
+		headMNode = tailMNode = new MNode(toAdd->MInfo);
+		toAdd = toAdd->MLink_Forward;
+	}
+
+	while (toAdd) 
+   {
+		tailMNode->MLink_Forward = new MNode(toAdd->MInfo);
+		tailMNode = tailMNode->MLink_Forward;
+		toAdd = toAdd->MLink_Forward;
 	}
 	return *this;
 }
@@ -816,6 +906,7 @@ const MString& MString::operator +=(char ch) { //100%
 	if (ch == '\0')
 		return *this;
 
+   bModified = true;
 	if (!headMNode) {
 		headMNode = tailMNode = new MNode(ch);
 		return *this;
@@ -829,6 +920,7 @@ const MString& MString::operator +=(char ch) { //100%
 }
 
 const MString& MString::operator +=(char string[]) { //100%
+   bModified = true;
 
 	for (int i = 0; string[i] != '\0'; i++) {
 	
@@ -845,6 +937,7 @@ const MString& MString::operator +=(char string[]) { //100%
 }
 
 const MString& MString::operator +=(int num) { 
+   bModified = true;
 	
 	//Original MString function
 	//Concatinates a integer to a string (woohoo!)
@@ -885,6 +978,7 @@ const MString& MString::operator +=(int num) {
 }
 
 const MString& MString::operator +=(double num) { 
+   bModified = true;
 	//Original MString
 
 	MString tmpStr, tmpStr2;
@@ -951,6 +1045,7 @@ const MString& MString::operator +=(double num) {
 }
 
 const MString& MString::operator +=(float num) { 
+   bModified = true;
 	//Original MString
 
 	MString tmpStr;
@@ -1187,7 +1282,39 @@ int MString::Compare(const MString& string) const {
 	MNode *tmpString = string.headMNode;
 	MNode *tmp = headMNode;
 	int error = 1;
-	for (int i = 0; (tmpString); i++) {
+
+   ///  ----- ADDED BY EMW 1/25/2005 -----------------
+   int count = 0;
+   while( tmpString )
+   {
+		error = 0;
+
+      // check if tmp == NULL  ( tmp is shorter than tmpString )
+		if (!tmp) {
+			return ((count+1) * -1);
+		}
+
+      // compare the letters
+		if (tmp->MInfo > tmpString->MInfo) 
+			return (count+1);
+		if (tmp->MInfo < tmpString->MInfo)
+			return ((count+1) * -1);
+
+      // get the next letter
+		tmp=tmp->MLink_Forward;
+		tmpString = tmpString->MLink_Forward;
+
+      count++;
+   }
+
+   // check if tmp is valid ( tmp is longer than tmpString )
+   if(tmp)
+   {
+      return count;
+   }
+   ///  ----- ADDED BY EMW 1/25/2005 -----------------
+
+	/*for (int i = 0; (tmpString); i++) {
 		error = 0;
 		if (!tmp) {
 			return ((i+1) * -1);
@@ -1198,13 +1325,14 @@ int MString::Compare(const MString& string) const {
 			return ((i+1) * -1);
 		tmp=tmp->MLink_Forward;
 		tmpString = tmpString->MLink_Forward;
-	}
+	}*/
 
 	// the next 4 lines need to be re-written
-	if (GetLength() > string.GetLength())
-		return GetLength();
-	if (GetLength() < string.GetLength())
-		return (string.GetLength() * -1);
+	//if (GetLength() > string.GetLength())
+	//	return GetLength();
+	//if (GetLength() < string.GetLength())
+	//	return (string.GetLength() * -1);
+
 	return error;
 }
 
@@ -1397,7 +1525,6 @@ MString MString::Left(int nCount) const {  //100%
 
 MString MString::Right(int nCount) const {  //100%
 
-
 	MString tmp;
 
 	if (!headMNode)
@@ -1445,8 +1572,10 @@ MString MString::SpanIncluding(char* string) const {
 		}
 		tmp = tmp->MLink_Forward;
 
-		if (tmpStr.IsEmpty())  //because MFC exits if first character doesn't contain
-			return tmpStr;     //one of the desired characters.
+      // because MFC exits if first character doesn't 
+      // contain one of the desired characters.
+		if (tmpStr.IsEmpty())  
+			return tmpStr;
 	}
 	return tmpStr;
 }
@@ -1490,7 +1619,8 @@ char* MString::ToChar(int nStart,int nCount) {
 
   if (nCount > 0)
   {
-    myChar = new char[(MIN(nCount+nStart,length) - nStart) + 1]; //a new char string, +1 is for null
+    //a new char string, +1 is for null
+    myChar = new char[(MIN(nCount+nStart,length) - nStart) + 1]; 
     MNode* tmp = TravelList(headMNode, nStart);
 
     for (int i = 0; i < MIN((length-nStart),nCount); i++) 
@@ -1501,7 +1631,8 @@ char* MString::ToChar(int nStart,int nCount) {
   }
   else
   {
-    myChar = new char[(length - nStart) + 1]; //a new char string, +1 is for null
+   //a new char string, +1 is for null
+    myChar = new char[(length - nStart) + 1]; 
     MNode* tmp = TravelList(headMNode, nStart);
 
     for (int i = nStart; i < length; i++) 
@@ -1519,10 +1650,18 @@ char* MString::ToChar(int nStart,int nCount) {
 
 int MString::ToInt(int nStart) {
 
-	if ((nStart < 0) || (nStart > GetLength()))
-		return 0;
+   MNode* tmp;
+   if( nStart != 0 )
+   {
+	   if ((nStart < 0) || (nStart > GetLength()))
+		   return 0;
 
-	MNode*tmp = TravelList(headMNode, nStart);
+	   tmp = TravelList(headMNode, nStart);
+   }
+   else
+   {
+      tmp = headMNode;
+   }
 
 	MString tmpStr;
 	int power = 1,
@@ -1554,10 +1693,18 @@ int MString::ToInt(int nStart) {
 
 double MString::ToDouble(int nStart) {
 
-	if ((nStart < 0) || (nStart > GetLength()))
-		return 0.0;
+   MNode* tmp;
+   if( nStart != 0 )
+   {
+	   if ((nStart < 0) || (nStart > GetLength()))
+		   return 0.0;
 
-	MNode*tmp = TravelList(headMNode, nStart);
+	   tmp = TravelList(headMNode, nStart);
+   }
+   else
+   {
+      tmp = headMNode;
+   }
 
 	MString tmpStr;
 
@@ -1613,6 +1760,7 @@ double MString::ToDouble(int nStart) {
 //Begin Other Conversions ---------------------------------
 
 void MString::MakeUpper() { 
+   bModified = true;
 	
 	MNode * tmp = headMNode;
 	while(tmp) {
@@ -1622,6 +1770,7 @@ void MString::MakeUpper() {
 }
 
 void MString::MakeLower() {
+   bModified = true;
 
 	MNode * tmp = headMNode;
 	while(tmp) {
@@ -1631,6 +1780,7 @@ void MString::MakeLower() {
 }
 	
 void MString::MakeReverse() {
+   bModified = true;
 
 	if (!headMNode) 
 		return;
@@ -1640,6 +1790,7 @@ void MString::MakeReverse() {
 }
 
 int MString::Replace(char chOld, char chNew) { 
+   bModified = true;
 
 	if (!headMNode) 
 		return 0;
@@ -1664,6 +1815,7 @@ int MString::Replace(char chOld, char chNew) {
 }
 
 int MString::Replace(char* stringOld, char* stringNew) { 
+   bModified = true;
 	//Idea from CString
 
 	int size1 = string_length(stringOld),
@@ -1688,6 +1840,7 @@ int MString::Replace(char* stringOld, char* stringNew) {
 }
 	
 int MString::Remove(char ch){ 
+   bModified = true;
 	//Idea from CString  
 	//TO DO: add string remove.
 
@@ -1701,6 +1854,7 @@ int MString::Remove(char ch){
 }
 
 int MString::Insert(int nIndex, char ch) { 
+   bModified = true;
 	//Idea from CString
 	
 	int length = GetLength();
@@ -1730,6 +1884,7 @@ int MString::Insert(int nIndex, char ch) {
 }
 
 int MString::Insert(int nIndex, char* string) { 
+   bModified = true;
 	//Idea from CString
 
 	int length = GetLength();
@@ -1748,6 +1903,7 @@ int MString::Insert(int nIndex, char* string) {
 }
 		
 int MString::Delete(int nIndex, int nCount) { 
+   bModified = true;
 	//Idea from CString
 
 	int length = GetLength();
@@ -1763,11 +1919,9 @@ int MString::Delete(int nIndex, int nCount) {
 		MNode* last = GetPointerAt((nIndex + nCount)-1);
 	
 		if (last->MLink_Forward) {
-			if (last->MLink_Forward->MLink_Forward) {
-				headMNode = last->MLink_Forward;
-				last->MLink_Forward = NULL;
-				deallocate(first);
-			}
+			headMNode = last->MLink_Forward;
+			last->MLink_Forward = NULL;
+			deallocate(first);
 		}
 		else {
 			headMNode = 0;
@@ -1782,16 +1936,9 @@ int MString::Delete(int nIndex, int nCount) {
 		MNode* last = GetPointerAt((nCount + nIndex) - 1);
 	
 		if (last->MLink_Forward) {
-			if (last->MLink_Forward->MLink_Forward) {
-				toHead->MLink_Forward = last->MLink_Forward;
-				last->MLink_Forward = NULL;
-				deallocate(first);
-			}
-			else {
-				toHead->MLink_Forward=last->MLink_Forward;
-				last->MLink_Forward = NULL;
-				deallocate(first);
-			}
+			toHead->MLink_Forward = last->MLink_Forward;
+			last->MLink_Forward = NULL;
+			deallocate(first);
 		}
 		else {
 			toHead->MLink_Forward = NULL;
@@ -1811,6 +1958,8 @@ int MString::Delete(int nIndex, int nCount) {
 //
 void MString::Format( const char * sFormat, ...)
 {
+   bModified = true;
+
 	char * s = new char[2000];
 	va_list arglist;
 	va_start(arglist, sFormat);
@@ -2057,81 +2206,88 @@ int MString::FindOneOf(char* string) const {
 char * MString::GetBuffer(int nMinBufLength) {
 	//Idea from CString
 	
-	if (pcStr) {
-		// if buffer is in existence already, simply delete it and start over
-		delete pcStr;	
-      pcStr = NULL;
-	}
-	
-	// create a buffer and copy list to it
-  	int iLen = GetLength();
-  	iLen = iLen < nMinBufLength ? nMinBufLength : iLen;
-  	pcStr = new char[iLen + 1];	// room for trailing zero
-  	if (pcStr) {
-  		char * tmppc = pcStr;
-  		MNode * pn = headMNode;
-  		iBufLen = iLen;
-  		while (pn) {
-  			*tmppc++ = pn->MInfo;
-  			pn = pn->MLink_Forward;
-  		}			
-      *tmppc = '\0';
-  	}		
+   if( bModified == true )
+   {
+	   if (pcStr) {
+		   // if buffer is in existence already, simply delete it and start over
+		   delete pcStr;	
+         pcStr = NULL;
+	   }
+	   
+	   // create a buffer and copy list to it
+  	   int iLen = GetLength();
+
+  	   iLen = iLen < nMinBufLength ? nMinBufLength :  // true 
+                                    iLen;            // false
+
+  	   pcStr = new char[iLen + 1];	// room for trailing zero
+  	   if (pcStr) {
+  		   char * tmppc = pcStr;
+  		   MNode * pn = headMNode;
+  		   iBufLen = iLen;
+  		   while (pn) {
+  			   *tmppc++ = pn->MInfo;
+  			   pn = pn->MLink_Forward;
+  		   }			
+         *tmppc = '\0';
+  	   }
+
+      bModified = false;
+   }
 	
 	return pcStr;
 }
 
 void MString::ReleaseBuffer(int nNewLength) {
-	//Idea from CString
-	if (pcStr){
-		if (nNewLength == -1) {  // Stop at the first NULL.
-         int i = 0;         
-         while( pcStr[i] != 0 ) {
-            i++;
-         }
-         nNewLength = i;
-		   //*this = pcStr;
-		}
 
-///  ----- ADDED BY JPI 1/7/2004 -----------------
+   // empty the current MString to prepare
+   // for getting the new string
+	MNode* tmp = headMNode;
+   MNode* tmp2;
+	while (tmp) {
+		tmp2 = tmp;
+		tmp = tmp->MLink_Forward;
+		delete tmp2;
+		tmp2 = NULL;
+	}
+   // done emptying MString
+
+   headMNode = new MNode( pcStr[0] );
+   tmp = headMNode;
+   int i = 1;
+   char ch;
+
+   if( nNewLength == -1 ) // if no length entered go through string until NULL
+   {
+      ch = pcStr[i];
+      while( ch != '\0' && i < iBufLen )
+      {
+		   tmp->MLink_Forward = new MNode(ch);
+		   tmp=tmp->MLink_Forward;
+
+         ++i;
+         ch = pcStr[i];
+	   }
+   }
+   else
+   {
+      bModified = true;
+   
       // Don't let the new length be longer than the
       //  current length.  Shorter is okay.
       if( nNewLength > iBufLen ) {
-         nNewLength = iBufLen; }  
+         nNewLength = iBufLen; }
 
-      // Make a local copy of pcStr because
-      //  for some reason it crashes if you use
-      //  pcStr[i] to create new nodes.
-      char* strCopy = new char[nNewLength];
-      for( int j=0; j<nNewLength; j++ )
+      while( i < nNewLength )
       {
-         strCopy[j] = pcStr[j];
-      }
-
-      // This section is adapted from the = operator code
-      //  for an MString, but it goes to the end of the 
-      //  buffer instead of to the first NULL.
-	   deallocate(headMNode);
-      
-      headMNode = new MNode( strCopy[0] );
-	   MNode *tmp = headMNode;
-
-	   for (int i = 1; i<nNewLength; i++) {
-		   tmp->MLink_Forward = new MNode( strCopy[i] );
+         ch = pcStr[i];
+         tmp->MLink_Forward = new MNode(ch);
 		   tmp=tmp->MLink_Forward;
-	   }
-	   tailMNode = tmp;
+         ++i;
+      }
+   }
 
-      delete [] strCopy;
-      strCopy = NULL;
-///  ----- ADDED BY JPI 1/7/2004 -----------------
-		
-		if (pcStr) {
-			delete [] pcStr;
-			pcStr = NULL;
-
-		}
-	}
+	tailMNode = tmp;
 }
 	
 //	LPTSTR GetBufferSetLength(int nNewLength);	//Idea from CString
