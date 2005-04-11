@@ -1,19 +1,19 @@
 /*  MString - Dynamic string data type library
-    Copyright (C) 2001-2004 Jesse L. Lovelace
+    Copyright (C) 2001-2005 Jesse L. Lovelace
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
+    This library is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 #ifndef MSTRING_H
@@ -22,7 +22,7 @@
 #ifdef __cplusplus  // we only want this for C++ code
 
 /*  MString by Jesse Lovelace (mentat)
-	jllovela@eos.ncsu.edu
+	jesse at aslogicsys dot com
 
     (MString began as GString but was changed to remain compatible with
 	gtk+'s GString data type.)
@@ -58,7 +58,7 @@
       Botch - debugging and advice,
       Antiloop - for phat grooves.
 
-	(Last modified December 15, 2004)
+	(Last modified April 10, 2005)
 */
 
 const int MAX_PRECISION = 9; //due to bad double to string code.

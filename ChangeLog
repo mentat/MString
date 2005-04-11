@@ -73,3 +73,5 @@ Copyright (C) 2000 Jesse L. Lovelace
           parameter is NOT passed in. Hopefully ;)
         * Added "=" to (nIndex >= GetLength()) in GetAt() and operator[].
         * Added operator!=(const MString& s1, const char* s2)
+
+CVS     * Moving to the LGPL
