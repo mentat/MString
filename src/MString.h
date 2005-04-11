@@ -62,7 +62,7 @@
 */
 
 const int MAX_PRECISION = 9; //due to bad double to string code.
-const char MString_VERSION[8] = "0.61c";
+const char MString_VERSION[8] = "0.70";
 //typedef const char * LPCSTR;
 
 #include <fstream>
