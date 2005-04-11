@@ -1,5 +1,5 @@
 /*  
-  $Id: MString.cpp,v 1.8 2005/04/11 01:29:30 thementat Exp $
+  $Id: MString.cpp,v 1.9 2005/04/11 15:33:53 pez4brian Exp $
 
   MString - Dynamic string data type library
   Copyright (C) 2001-2005 Jesse L. Lovelace (jesse at aslogicsys dot com)
@@ -20,6 +20,9 @@
 
   -----
     $Log: MString.cpp,v $
+    Revision 1.9  2005/04/11 15:33:53  pez4brian
+    Update for 0.70 release
+
     Revision 1.8  2005/04/11 01:29:30  thementat
     Changing the license to LGPL.
 
@@ -39,90 +42,6 @@
 
     Revision 1.3  2001/10/17 13:23:53  thementat
     Added new code by Balint Toth and revised headers.
-
-   07-09-2003  Mike Golden:
-               Changed #include <iostream.h> to the depreciated form of 
-                  #include <iostream> and added the "using" lines to make it 
-                  still compile.
-               Also changed #inlcude <fstream.h> to #include <fstream>
-
-   07-15-2003  Mike Golden:
-               Fixed bug in GetBuffer; it didn't add the terminiating null '\0'.
-
-
-   07-21-2003  Mike Golden:
-               Fixed bug in constructor "MString(const char * string)"; it did 
-                  not like a string where the only character is a null '\0'.
-               Also fixed "MString(const char * string, int nLength)".
-
-   07-23-2003  Mike Golden:
-               Added Functionality to ToInt() so that it can take a negative 
-                  number.
-
-   07-24-2003  Eric Westra:
-               Added ToDouble() based on the ToInt() class.
-
-   11-21-2003 Brian Matherly:
-               Made char* in Format() const char*
-
-   01-07-2004 Joshua Iverson:
-               Fixed the ReleaseBuffer() function to handle when a new length
-                  parameter is passed in. Hopefully ;)
-
-   01-13-2004 Brian Matherly
-               Added functions CompareGlob (public) and Gmatch (private) for 
-                  performing wildcard comparisons.
-
-   05-25-2004 Brian Matherly
-               Fixed int constructor and int operator= to handle zero
-   
-   06-03-2004 Joshua Iverson
-               Hopefully fixed the Compare( char* ) function to handle strings 
-                  that are the same up to a point, but one is longer than the 
-                  other.  e.g. "abc" != "abcd".
-
-   17-06-2004 Brian Matherly
-               Some initializing functions handled an empty string differently.
-               Now, initializing an MString from an empty string 
-                  (ie str[0] = '\0' results in an MString with no 
-                  allocated nodes.)
-                 
-   06-24-2004 Joshua Iverson
-               Fixed the ReleaseBuffer() function to handle when a new length
-                  parameter is NOT passed in. Hopefully ;)
-
-   09-15-2004 Joshua Iverson
-               Added "=" to (nIndex >= GetLength()) in GetAt() and operator[].
-
-   09-22-2004 Jeff Van Roekel
-               Added operator!=(const MString& s1, const char* s2)
-
-   01-25-2005 Eric Westra
-               optimized Compare( Mstring& ) fixed same problem as 06-03-2004
-               added default 0 to ToInt; skip GetLength and List Traversal if 0
-               added default -1 to GetBuffer to alert user that they don't have 
-                  to pass in a value
-
-   01-31-2005 Eric Westra
-               added bModified.  bModified is set to true in functions that 
-                  modify the MString. This way the pcstr does not need to be 
-                  built every time GetBuffer() is called. If no modifications 
-                  have been made to the MString just gives out a pointer to the 
-                  pcstr.  This is necessary to ensure the safety of static const 
-                  MStrings that perform a (const char*) conversion.  
-                  **WARNING**  The operator const char*() function is still NOT 
-                  safe.  Is still susceptable to a race condition on startup.
-
-   01-31-2005 Eric Westra
-               GetAt(), operator[], and SetAt().  All called GetLength() which 
-                  links forward through the list to find the length to see if 
-                  nIndex was in the list.  Then linked foward through the list 
-                  to that point.  Wasteful.  Rewrote so link forward until get 
-                  to that position or list ends.
-                  
-   03-14-2005 Brian Matherly
-               Fix Delete and remove unnecessary if statement.
-               Misc. Formatting.
 
 */
 

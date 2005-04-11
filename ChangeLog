@@ -74,4 +74,12 @@ Copyright (C) 2000 Jesse L. Lovelace
         * Added "=" to (nIndex >= GetLength()) in GetAt() and operator[].
         * Added operator!=(const MString& s1, const char* s2)
 
-CVS     * Moving to the LGPL
+0.70    * Move to the LGPL
+        * Optimized Compare( Mstring& )
+        * Added default 0 to ToInt; skip GetLength and List Traversal if 0
+        * Added default -1 to GetBuffer to alert user that they don't have 
+          to pass in a value
+        * Added bModified to speed up GetBuffer()
+        * Optimize GetAt(), operator[], and SetAt().
+        * Fix Delete and remove unnecessary if statement (Bug# 1108090).
+        * Misc. Formatting.
