@@ -1,5 +1,6 @@
 /*  MString - Dynamic string data type library
     Copyright (C) 2001-2005 Jesse L. Lovelace
+    Copyright (C) 2005,2007 Brian G. Matherly
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -58,7 +59,7 @@
       Botch - debugging and advice,
       Antiloop - for phat grooves.
 
-	(Last modified April 10, 2005)
+	(Last modified June 6, 2007)
 */
 
 const int MAX_PRECISION = 9; //due to bad double to string code.
@@ -284,7 +285,13 @@ public:
 	//     myString.ToInt(0) returns 12345
 	//     myString.ToInt(1) returns 2345
 
+   unsigned int ToUnsignedInt( int nStart = 0 );
+
 	double ToDouble( int nStart = 0 );
+   
+   // handles both 'A' to 'E' and 'a' to 'e' as hexidecimal digits
+   // but will ignore sign
+   unsigned long ToHex( int nStart = 0 );
 
 //End Extraction operators --------------------------------
 

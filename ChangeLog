@@ -83,3 +83,6 @@ Copyright (C) 2000 Jesse L. Lovelace
         * Optimize GetAt(), operator[], and SetAt().
         * Fix Delete and remove unnecessary if statement (Bug# 1108090).
         * Misc. Formatting.
+
+0.71    * Add ToUnsignedInt()
+        * Add ToHex()

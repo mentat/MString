@@ -1,8 +1,9 @@
 /*  
-  $Id: MString.cpp,v 1.9 2005/04/11 15:33:53 pez4brian Exp $
+  $Id: MString.cpp,v 1.10 2007/06/15 13:53:32 pez4brian Exp $
 
   MString - Dynamic string data type library
   Copyright (C) 2001-2005 Jesse L. Lovelace (jesse at aslogicsys dot com)
+  Copyright (C) 2005,2007 Brian G. Matherly (pez4brian at users.sourceforge.net)
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -20,6 +21,9 @@
 
   -----
     $Log: MString.cpp,v $
+    Revision 1.10  2007/06/15 13:53:32  pez4brian
+    Add ToUnsignedInt() and ToHex()
+
     Revision 1.9  2005/04/11 15:33:53  pez4brian
     Update for 0.70 release
 
@@ -1613,6 +1617,48 @@ int MString::ToInt(int nStart) {
 	return tmpInt * tmpMul;
 }
 
+unsigned int MString::ToUnsignedInt( int nStart )
+{
+   MNode* tmp;
+   if( nStart != 0 )
+   {
+      if ((nStart < 0) || (nStart > GetLength()))
+         return 0;
+
+      tmp = TravelList(headMNode, nStart);
+   }
+   else
+   {
+      tmp = headMNode;
+   }
+
+   MString tmpStr;
+   unsigned int power = 1,
+                tmpUint = 0;
+
+   if( (tmp) && (tmp->MInfo == '-') )
+   {
+      return 0;
+   }
+
+   while((tmp) && (tmp->MInfo >= '0') && (tmp->MInfo <='9')) {
+      tmpStr+= tmp->MInfo;
+      tmp = tmp->MLink_Forward;
+   }
+
+   tmpStr.MakeReverse();
+
+   tmp = tmpStr.headMNode;
+
+   while(tmp) {
+      tmpUint = tmpUint + ((tmp->MInfo - '0') * power);
+      power = power * 10;
+      tmp = tmp->MLink_Forward;
+   }
+   
+   return tmpUint;
+}
+   
 double MString::ToDouble(int nStart) {
 
    MNode* tmp;
@@ -1675,6 +1721,67 @@ double MString::ToDouble(int nStart) {
 	}
 
 	return tmpDouble * tmpMul;
+}
+
+unsigned long MString::ToHex( int nStart )
+{
+   MNode* tmp;
+   if( nStart != 0 )
+   {
+      if ((nStart < 0) || (nStart > GetLength()))
+         return 0;
+
+      tmp = TravelList(headMNode, nStart);
+   }
+   else
+   {
+      tmp = headMNode;
+   }
+
+   MString tmpStr;
+   int power = 1;
+      
+   unsigned long tmpLong = 0;
+
+   // this makes sure only valid values are converted
+   while( (tmp) && 
+          ( 
+            ((tmp->MInfo >= '0') && (tmp->MInfo <='9')) || 
+            ((tmp->MInfo >= 'A') && (tmp->MInfo <= 'F')) || 
+            ((tmp->MInfo >= 'a') && (tmp->MInfo <= 'f'))
+          )
+        )
+   {
+      tmpStr+= tmp->MInfo;
+      tmp = tmp->MLink_Forward;
+   }
+
+   // head node is the first value so reverse so can easily determine
+   // the correct power
+   tmpStr.MakeReverse();
+
+   tmp = tmpStr.headMNode;
+
+   // convert the values
+   while(tmp) 
+   {
+      if( tmp->MInfo >= 'a' )
+      {
+         tmpLong = tmpLong + (((tmp->MInfo - 'a') + 10) * power);   
+      }
+      else if( tmp->MInfo >= 'A' )
+      {
+         tmpLong = tmpLong + (((tmp->MInfo - 'A') + 10) * power);
+      }
+      else
+      {
+         tmpLong = tmpLong + ((tmp->MInfo - '0') * power);
+      }
+      power = power * 16;
+      tmp = tmp->MLink_Forward;
+   }
+   
+   return tmpLong;   
 }
 
 //End Extraction operators --------------------------------
